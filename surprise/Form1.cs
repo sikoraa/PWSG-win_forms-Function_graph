@@ -109,6 +109,11 @@ namespace surprise
             return PP;
         }
 
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            ;
+        }
+
         private void drawB_Click(object sender, EventArgs e)
         {
             bool any = false;

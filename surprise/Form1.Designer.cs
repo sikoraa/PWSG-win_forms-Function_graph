@@ -190,6 +190,7 @@
             this.Controls.Add(this.progressBar1);
             this.Name = "Form1";
             this.Text = "Integral1";
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.Resize += new System.EventHandler(this.Form1_Resize);
             ((System.ComponentModel.ISupportInitialize)(this.mapa)).EndInit();
             this.ResumeLayout(false);
