@@ -22,6 +22,7 @@ namespace surprise
         int asyncLength = 10;
         double[,] y;
         Point[,] p;
+        List<Color> colors = new List<Color>();
         int n = 3;
         List<bool> selF;
         List<string> functions;
@@ -35,7 +36,7 @@ namespace surprise
             x1 = double.Parse(fromBox.Text);
             x2 = double.Parse(toBox.Text);
             string[] tmpfunctions = { "x*x*x-x*x-x-1", "x*x", "x - 6" };
-            Color[] colors = { Color.Red, Color.Blue, Color.Black, Color.Orange, Color.Green, Color.Purple  };
+            //Color[] colors = { Color.Red, Color.Blue, Color.Black, Color.Orange, Color.Green, Color.Purple  };
             functions = tmpfunctions.ToList();
             n = functions.Count;
             x = getX(x1, x2, nr);
@@ -44,6 +45,28 @@ namespace surprise
             for (int i = 0; i < n; ++i)
                 selF.Add(false);
             selF[0] = true;
+            string[] colorss = new string[] {
+        "FF0000", "00FF00", "0000FF", "FFFF00", "FF00FF", "00FFFF", "000000",
+        "800000", "008000", "000080", "808000", "800080", "008080", "808080",
+        "C00000", "00C000", "0000C0", "C0C000", "C000C0", "00C0C0", "C0C0C0",
+        "400000", "004000", "000040", "404000", "400040", "004040", "404040",
+        "200000", "002000", "000020", "202000", "200020", "002020", "202020",
+        "600000", "006000", "000060", "606000", "600060", "006060", "606060",
+        "A00000", "00A000", "0000A0", "A0A000", "A000A0", "00A0A0", "A0A0A0",
+        "E00000", "00E000", "0000E0", "E0E000", "E000E0", "00E0E0", "E0E0E0",
+    };
+            foreach (var c in colorss)
+                colors.Add(Color.FromArgb((int)long.Parse(c.Substring(0,2),System.Globalization.NumberStyles.HexNumber), (int)long.Parse(c.Substring(2, 2), System.Globalization.NumberStyles.HexNumber), (int)long.Parse(c.Substring(4, 2), System.Globalization.NumberStyles.HexNumber)));
+            //ColourGenerator generator = new ColourGenerator();
+
+            //for (int i = 0; i < 64; ++i)
+            //{
+            //    colors.Add(Color.FromArgb(int.Parse(generator.NextColour()), int.Parse(generator.NextColour()), int.Parse(generator.NextColour())));
+            //    //string tmpColor = generator.NextColour();
+            //    debug.Text = generator.NextColour() + " " + generator.NextColour() + " " + generator.NextColour() + " ";
+            //    //colors.Add(Color.FromArgb(int.Parse(tmpColor.Substring(0,2)), int.Parse(tmpColor.Substring(2, 2)), int.Parse(tmpColor.Substring(4, 2)) ));
+            //}
+            //colors = new List<Color>();
             p = new Point[n, x.Length];
             //string[] t = functions.ToArray();
             funcBox.Items.AddRange(functions.ToArray());      
@@ -234,23 +257,22 @@ namespace surprise
                         string tmp = functions[i].ToString().Replace("x", x[k].ToString());
 
                         //string tmp = functions[i];
-                        tmp = Regex.Replace(
-                            tmp,
-                            @"\d+(\.E\d+)?",
-                            m => {
-                                var xx = m.ToString();
-                                if (xx.Contains("."))
-                                {
-                                    return xx;
-                                }
-                                else
-                                    if (xx.Contains("E"))
-                                        return xx;
-                                    else
-                                        return string.Format("{0}.0 ", xx);
-                                //return xx.Contains(".") ? xx : string.Format("{0}.0 ", xx);
-                            }
-                        );
+                        //tmp = Regex.Replace(
+                        //    tmp,
+                        //    @"\d+(\.\d+)?",
+                        //    m => {
+                        //        var xx = m.ToString();
+                        //        //if (xx.Contains("."))
+                        //        //{
+                        //        //    //if (xx.Contains("E"))
+                        //        //    //    return xx;
+                        //        //    return xx;
+                        //        //}
+                        //        //else
+                        //        //    return string.Format("{0}.0 ", xx);
+                        //        return xx.Contains(".") ? xx : string.Format("{0}.0 ", xx);
+                        //    }
+                        //);
                         //dc.Expression = t;
                         //
                         //integralLabel.Text = tmp;e
@@ -286,7 +308,7 @@ namespace surprise
 
                 Point[,] p_tmp = getPoints(x_tmp, y_tmp);
                 ThreadHelperClass.SetText(this, integralLabel, "Integral: " + Integrate(x_tmp, y_tmp));
-                draw(true, p_tmp);
+                draw(true, p_tmp, y_tmp);
 
                 calculations.ReportProgress((i+1)*10); // obliczenia wykonane, narysowac trzeba
 
@@ -330,12 +352,12 @@ namespace surprise
 
         private void drawB_Click(object sender, EventArgs e) // WORKING
         {
-            double[] x_tmp = getX(x1, x2, mapa.Width+1);
+            double[] x_tmp = getX(x1, x2, mapa.Width/4+1);
             double[,] y_tmp = calculateY(x_tmp, functions, selF.ToArray());
             Point[,] p_tmp = getPoints(x_tmp, y_tmp);
             double integral = 0;
             ThreadHelperClass.SetText(this, integralLabel, "Integral: " + Integrate(x_tmp, y_tmp));
-            draw(false, p_tmp);
+            draw(false, p_tmp, y_tmp);
         }
 
         private Double Integrate(double[] x, double[,] y)
@@ -353,10 +375,13 @@ namespace surprise
             return ret;
         }
 
-        private void draw(bool zeroLine, Point[,] p) // not quite there yet..
+        private void draw(bool async, Point[,] p, double[,] y) // not quite there yet..
         {
             
             Pen pTmp = new Pen(Color.Red, (float)2);
+            //Brush bTmp = new Brush();
+            Brush brush = new SolidBrush(Color.Red);           
+            Pen rect = new Pen(Color.Red, (float)1);
             Bitmap bmp = new Bitmap(mapa.Width, mapa.Height);
             Graphics gr = mapa.CreateGraphics();
             Graphics rg = Graphics.FromImage(bmp);
@@ -368,8 +393,8 @@ namespace surprise
             if (y.GetLength(0) < 1)
             {
 
-                maxLabel.Text = "Max Y : ";
-                minLabel.Text = "Min Y : ";
+                ThreadHelperClass.SetText(this, maxLabel, "Max Y : ");
+                ThreadHelperClass.SetText(this, minLabel, "Min Y : ");
                 return;
             }
             //maxLabel.Text = "Max Y : " + MAXY.ToString();
@@ -379,12 +404,12 @@ namespace surprise
             bool draw = false;
             for (int i = 0; i < selF.Count; ++i) if (selF[i]) draw = true;
 
-            if (zeroLine)
+            if (async)
             {
                 if (draw)
                 {
                     double y0 = (MAXY - MINY) / 2 + MINY;
-                    rg.DrawLine(new Pen(Color.Black, (float)1), new Point(0, conv(0, y0).Y), new Point(mapa.Width - 1, conv(mapa.Width - 1, y0).Y));
+                    rg.DrawLine(new Pen(Color.Black, (float)1), conv(x1,0), conv(x2,0));
                 }
                 else
                 {
@@ -397,13 +422,44 @@ namespace surprise
             }
             if (y.GetLength(0) >= 1)
             {
+                int dx = p[0, 1].X - p[0, 0].X;
                 for (int i = 0; i < p.GetLength(0); ++i)
                 {
+                    pTmp.Color = colors[i];
+                    rect.Color = Color.FromArgb(100,colors[i]);
+                    brush = new SolidBrush(Color.FromArgb(100, colors[i]));
+                    //brush.Color = Color.FromArgb(100, colors[i]);
                     for (int j = 0; j < p.GetLength(1); ++j)
                     {
+                        //pTmp.Color = colors[i];
                         rg.DrawEllipse(pTmp, p[i, j].X, p[i, j].Y, (float)1, (float)1);
                         if (j > 0)
+                        {
                             rg.DrawLine(pTmp, p[i, j - 1], p[i, j]);
+                            if (async)
+                            {
+                                int x = p[i, j - 1].X;
+                                double yy = (y[i, j - 1] + y[i, j]) / 2;
+                                Rectangle r = new Rectangle();
+                                r.X = x;
+                               
+                                r.Width = dx;
+                                if (yy > 0)
+                                {
+
+                                    r.Y = conv(0, yy).Y;
+                                    r.Height = -conv(0,yy).Y + conv(0,0).Y;
+                                    
+                                }
+                                else
+                                {
+                                    r.Y = conv(0, 0).Y;
+                                    r.Height = -conv(0, 0).Y + conv(0, yy).Y;
+                                }
+                                //rg.DrawRectangle(rect, r);
+                                rg.FillRectangle(brush, r);
+                            }
+                        }
                     }
                 }
             }
