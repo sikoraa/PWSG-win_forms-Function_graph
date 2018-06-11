@@ -18,6 +18,7 @@ namespace surprise
         public addFuncForm()
         {
             InitializeComponent();
+            this.ActiveControl = funcBox;
             funcBox.Focus();
         }
 

@@ -228,7 +228,14 @@ namespace surprise
                     for (int k = 0; k < x.Length; ++k)
                     {
 
-                        y[j, k] = Convert.ToDouble(new DataTable().Compute(   functions[i].ToString().Replace("x", x[k].ToString())+(".0"), null));
+                        DataColumn dc = new DataColumn("dc", typeof(decimal));
+
+                        string t = functions[i].ToString().Replace("x", x[k].ToString()+".0");
+
+                        t = t;
+                        //dc.Expression = t;
+                       //
+                        y[j, k] = Convert.ToDouble(new DataTable().Compute(  t , null));
                         if (y[j, k] > MAXY) MAXY = y[j, k];
                         if (y[j, k] < MINY) MINY = y[j, k];
 

@@ -63,8 +63,10 @@
             // 
             // addFuncForm
             // 
+            this.AcceptButton = this.saveB;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.CancelButton = this.cancelB;
             this.ClientSize = new System.Drawing.Size(249, 79);
             this.Controls.Add(this.funcBox);
             this.Controls.Add(this.saveB);
