@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -228,14 +229,34 @@ namespace surprise
                     for (int k = 0; k < x.Length; ++k)
                     {
 
-                        DataColumn dc = new DataColumn("dc", typeof(decimal));
+                        //DataColumn dc = new DataColumn("dc", typeof(decimal));
 
-                        string t = functions[i].ToString().Replace("x", x[k].ToString()+".0");
+                        string tmp = functions[i].ToString().Replace("x", x[k].ToString());
 
-                        t = t;
+                        //string tmp = functions[i];
+                        tmp = Regex.Replace(
+                            tmp,
+                            @"\d+(\.E\d+)?",
+                            m => {
+                                var xx = m.ToString();
+                                if (xx.Contains("."))
+                                {
+                                    return xx;
+                                }
+                                else
+                                    if (xx.Contains("E"))
+                                        return xx;
+                                    else
+                                        return string.Format("{0}.0 ", xx);
+                                //return xx.Contains(".") ? xx : string.Format("{0}.0 ", xx);
+                            }
+                        );
                         //dc.Expression = t;
-                       //
-                        y[j, k] = Convert.ToDouble(new DataTable().Compute(  t , null));
+                        //
+                        //integralLabel.Text = tmp;e
+                        ThreadHelperClass.SetText(this, debug,tmp);
+
+                        y[j, k] = Convert.ToDouble(new DataTable().Compute(  tmp , null));
                         if (y[j, k] > MAXY) MAXY = y[j, k];
                         if (y[j, k] < MINY) MINY = y[j, k];
 
