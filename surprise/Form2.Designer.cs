@@ -71,6 +71,7 @@
             this.Controls.Add(this.funcBox);
             this.Controls.Add(this.saveB);
             this.Controls.Add(this.cancelB);
+            this.MaximizeBox = false;
             this.Name = "addFuncForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Add Function";

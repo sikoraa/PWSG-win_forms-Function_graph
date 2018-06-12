@@ -18,6 +18,7 @@ namespace surprise
         public addFuncForm()
         {
             InitializeComponent();
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.ActiveControl = funcBox;
             funcBox.Focus();
         }
@@ -48,7 +49,7 @@ namespace surprise
             if (text == null || text == "") return false;
             try
             {
-                double p = Convert.ToDouble(new DataTable().Compute(text.Replace('x', '1'), null));
+                double p = Convert.ToDouble(new DataTable().Compute(text.Replace("x", "1.1"), null));
                 //if (p == null)
                 //    return false;
                 return true;

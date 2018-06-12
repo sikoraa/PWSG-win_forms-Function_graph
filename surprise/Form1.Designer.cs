@@ -254,6 +254,7 @@
             this.Controls.Add(this.funcBox);
             this.Controls.Add(this.mapa);
             this.Controls.Add(this.progressBar);
+            this.MaximizeBox = false;
             this.Name = "Form1";
             this.Text = "Integral1";
             this.Load += new System.EventHandler(this.Form1_Load);
