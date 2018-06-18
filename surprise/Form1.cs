@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -36,7 +37,6 @@ namespace surprise
             x1 = -2;
             x2 = 3;
             string[] tmpfunctions = { "x*x*x-x*x-x-1", "x*x", "x - 6" };
-            //Color[] colors = { Color.Red, Color.Blue, Color.Black, Color.Orange, Color.Green, Color.Purple  };
             functions = tmpfunctions.ToList();
             n = functions.Count;
             x = getX(x1, x2, nr);
@@ -82,27 +82,12 @@ namespace surprise
                     if (e.NewValue == CheckState.Checked)
                     {
                         selF[e.Index] = true;
-                        //debug.Text += "(" + e.Index.ToString() + "," + selF[e.Index] + ") ";
-
                     }
                     else
                     {
                         selF[e.Index] = false;
                     }
-                    //Random rnd = new Random();
-                    //debug.Text = rnd.Next(0, 100).ToString() + "  ";
-                    //if (funcBox.SelectedIndex == -1) return;
-
-                    for (int i = 0; i < functions.Count; ++i)
-                    {
-                        if (i == e.Index) continue;
-                        //selF[i] = false;
-                        if (funcBox.GetItemChecked(i))
-                        {
-                            //selF[i] = true;
-                            //debug.Text += "(" + i.ToString() + "," + selF[i] + ") ";
-                        }
-                    }
+                     
                     funcBox.Enabled = true;
                 }
                 );
@@ -110,18 +95,6 @@ namespace surprise
 
         private void funcBox_SelectedValueChanged(object sender, EventArgs e)
         {
-            //Random rnd = new Random();
-            //debug.Text = rnd.Next(0, 100).ToString();
-            //if (funcBox.SelectedIndex == -1) return;
-
-            //for (int i = 0; i < functions.Count; ++i)
-            //{
-            //    selF[i] = false;
-            //    if (funcBox.GetItemChecked(i))
-            //    {
-            //        selF[i] = true;
-            //    }
-            //}
         }
 
 
@@ -189,7 +162,7 @@ namespace surprise
 
             Point PP = new Point((int)newx, mapa.Height - (int)newy);
             return PP;
-        } // WORKING
+        }
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -210,12 +183,7 @@ namespace surprise
 
         private void addFuncB_Click(object sender, EventArgs e)
         {
-            //this.IsMdiContainer = true;
             f = new addFuncForm();
-            
-            //Form tmp = new addFuncForm();
-            //f.Parent = this;
-            //tmp.MdiParent = this;
             var result = f.ShowDialog(this);
             if (result == DialogResult.OK)
             {
@@ -235,7 +203,15 @@ namespace surprise
                 if (selF[i]) ++funcCount;
             decimal[,] y = new decimal[funcCount, x.Length];
             int j = 0;
-            for(int i = 0; i < functions.Count; ++i)
+            string CultureName = Thread.CurrentThread.CurrentCulture.Name;
+            CultureInfo ci = new CultureInfo(CultureName);
+            if (ci.NumberFormat.NumberDecimalSeparator != ".")
+            {
+                // Forcing use of decimal separator for numerical values
+                ci.NumberFormat.NumberDecimalSeparator = ".";
+                Thread.CurrentThread.CurrentCulture = ci;
+            }
+            for (int i = 0; i < functions.Count; ++i)
             {
                 if (selF[i])
                 {
@@ -247,27 +223,18 @@ namespace surprise
                         Decimal d = (Decimal)x[k];
                         string tt = x[k].ToString("F99").TrimEnd('0');
                         string tmp = functions[i].ToString().Replace("x", d.ToString());//x[k].ToString() + "m");
-                        //if (ii == 0)
-                        //{
-                        //    MessageBox.Show(tmp);
-                            
-                        //    ++ii;
-                        //}
-                        //ThreadHelperClass.SetText(this, debug,tmp);
                         string expression = tmp;
                         expression = Regex.Replace(
-    expression,
-    @"\d+(\.\d+)?",
-    m => {
-        var t = m.ToString();
-        return t.Contains(".") ? t : string.Format("{0}.0", t);
-    }
-);
+                            expression,
+                            @"\d+(\.\d+)?",
+                            m => {
+                                var t = m.ToString();
+                                return t.Contains(".") ? t : string.Format("{0}.0", t);
+                            }
+                        );
 
                         if (ii == 0)
                         {
-                            //MessageBox.Show(expression);
-                            //return y;
                             ++ii;
                         }
                         y[j, k] = (Decimal)new DataTable().Compute(expression, null);// Convert.ToDecimal(new DataTable().Compute(expression, null));
@@ -275,12 +242,7 @@ namespace surprise
                         if (y[j, k] < MINY) MINY = y[j, k];
 
 
-
-                        //y[j, k] = Convert.ToDecimal(new DataTable().Compute(  tmp , null));
-                        //if (y[j, k] > MAXY) MAXY = y[j, k];
-                        //if (y[j, k] < MINY) MINY = y[j, k];
-
-                    }
+                }
                     ++j;
                 }
             }
@@ -298,18 +260,15 @@ namespace surprise
                     e.Cancel = true;
                     return;
                 }
-                //ThreadHelperClass.SetText(this, integralLabel, "Integral: " + c(selF.ToArray()));
-                
                 double[] x_tmp = getX(x1, x2, 2<<i + 1);
                 decimal[,] y_tmp = calculateY(x_tmp, functions, selF.ToArray());
-                //Point[,] realPoints = getPoints(x_tmp, y_tmp);
 
                 Point[,] p_tmp = getPoints(x_tmp, y_tmp);
-                //ThreadHelperClass.SetText(this, integralLabel, "Integral: " + Integrate(x_tmp, y_tmp).ToString("0.###E+00").TrimEnd('0').TrimEnd('.'));
+
                 ThreadHelperClass.SetText(this, integralLabel, "Integral: " + Integrate(x_tmp, y_tmp).ToString("0.#####E+000").TrimEnd('0').TrimEnd('-').TrimEnd('+').TrimEnd('E'));
                 draw(true, p_tmp, y_tmp);
 
-                calculations.ReportProgress((i+1)*10); // obliczenia wykonane, narysowac trzeba
+                calculations.ReportProgress((i+1)*10);
 
                 Thread.Sleep(1000);
             }
@@ -354,7 +313,6 @@ namespace surprise
             double[] x_tmp = getX(x1, x2, mapa.Width/4+1);
             decimal[,] y_tmp = calculateY(x_tmp, functions, selF.ToArray());
             Point[,] p_tmp = getPoints(x_tmp, y_tmp);
-            //decimal integral = 0;
             ThreadHelperClass.SetText(this, integralLabel, "Integral: " + Integrate(x_tmp, y_tmp).ToString("0.#####E+000").TrimEnd('0').TrimEnd('-').TrimEnd('+').TrimEnd('E'));
             draw(false, p_tmp, y_tmp);
         }
@@ -374,7 +332,7 @@ namespace surprise
             return ret;
         }
 
-        private void draw(bool async, Point[,] p, Decimal[,] y) // not quite there yet..
+        private void draw(bool async, Point[,] p, Decimal[,] y)
         {
             
             Pen pTmp = new Pen(Color.Red, (float)2);
@@ -397,10 +355,8 @@ namespace surprise
                 mapa.Image = null;
                 return;
             }
-            //maxLabel.Text = "Max Y : " + MAXY.ToString();
-            ThreadHelperClass.SetText(this, maxLabel, "Max Y : " + MAXY.ToString("0.###E+00").TrimEnd('0').TrimEnd('.'));
-            //minLabel.Text = "Min Y : " + MINY.ToString();
-            ThreadHelperClass.SetText(this, minLabel, "Min Y : " + MINY.ToString("0.###E+00").TrimEnd('0').TrimEnd('.'));
+            ThreadHelperClass.SetText(this, maxLabel, "Max Y : " + MAXY.ToString("0.###E+00").TrimEnd('0').TrimEnd('.').TrimEnd('-').TrimEnd('+').TrimEnd('E'));
+            ThreadHelperClass.SetText(this, minLabel, "Min Y : " + MINY.ToString("0.###E+00").TrimEnd('0').TrimEnd('.').TrimEnd('-').TrimEnd('+').TrimEnd('E'));
             bool draw = false;
             for (int i = 0; i < selF.Count; ++i) if (selF[i]) draw = true;
 
@@ -428,10 +384,8 @@ namespace surprise
                     pTmp.Color = colors[i];
                     rect.Color = Color.FromArgb(100,colors[i % colors.Count]);
                     brush = new SolidBrush(Color.FromArgb(100, colors[i % colors.Count]));
-                    //brush.Color = Color.FromArgb(100, colors[i]);
                     for (int j = 0; j < p.GetLength(1); ++j)
                     {
-                        //pTmp.Color = colors[i];
                         rg.DrawEllipse(pTmp, p[i, j].X, p[i, j].Y, (float)1, (float)1);
                         if (j > 0)
                         {
@@ -457,7 +411,6 @@ namespace surprise
                                     r.Y = conv(0, 0).Y;
                                     r.Height = -conv(0, 0).Y + conv(0, yy).Y;
                                 }
-                                //rg.DrawRectangle(rect, r);
                                 rg.FillRectangle(brush, r);
                             }
                         }
